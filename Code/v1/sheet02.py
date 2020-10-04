@@ -70,19 +70,28 @@ if __name__ == "__main__":
     # Get the cells in the first column
     values = sheet.col_values(1)
 
-    # Read old vaues from last time
-    filename = "log.csv"  # Log file to check previous data
-    # TODO: check that the file actually exists
-    with open(filename, "r") as f:  # Use ´with´ to ensure file is properly closed
-        old_values = next(csv.reader(f))  # Get old values as a list, much easier to use
+    # Read previous values from log file
+    logfile = "log.csv"
+    try:
+        f = open(logfile, "r")
+    except FileNotFoundError:
+        # On the first run, the logfile doesn't exist,
+        # so we use a value that is only equal to itself as `old_values`.
+        # (also called a sentinel value)
+        old_values = object()
+    else:
+        # Use ´with´ to ensure file gets properly closed
+        with f:
+            # Get old values as a list, much easier to use
+            old_values = next(csv.reader(f))
 
     # Check if there is any new data since last time
     if values != old_values:  # We can compare lists!
         write_to_e_paper(values)
 
-        # Log new values
-        with open(filename, "w") as csv:
-            writer = csv.writer(csv)  # There is also a csv.writer
+        # Log new values (will create the logfile if needed)
+        with open(logfile, "w") as f:
+            writer = csv.writer(f)  # There is also a csv.writer
             writer.writerow(values)
 
     else:
